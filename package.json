@@ -1,0 +1,25 @@
+{
+  "name": "api-chat-socket",
+  "version": "1.0.0",
+  "description": "Chat SocketIO",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "npx nodemon src",
+    "lint": "npx eslint ."
+  },
+  "author": "Álvaro Oliveira",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "hasha": "^5.1.0",
+    "mongoose": "^5.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.7.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.19.1",
+    "nodemon": "^2.0.1"
+  }
+}
