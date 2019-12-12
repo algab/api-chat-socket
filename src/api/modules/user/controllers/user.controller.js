@@ -14,7 +14,6 @@ class UserController {
     async save({ body }, res) {
         try {
             const data = body;
-            new this.User(data).validateSync();
             const result = await this.User.find({ email: data.email }).countDocuments();
             if (!result) {
                 data.avatar_url = `https://www.gravatar.com/avatar/${hasha(data.email, { algorithm: 'md5' })}?d=retro`;
@@ -24,11 +23,7 @@ class UserController {
                 res.status(409).json({ Message: 'Email conflict' }).end();
             }
         } catch (error) {
-            if (error.name === 'ValidationError') {
-                res.status(400).json({ Message: error.message }).end();
-            } else {
-                res.status(500).json({ Message: 'Server Error' }).end();
-            }
+            res.status(500).json({ Message: 'Server Error' }).end();
         }
     }
 
@@ -52,9 +47,8 @@ class UserController {
 
     async update({ body, params }, res) {
         try {
-            new this.User(body).validateSync();
             const result = await this.User.findById(params.id);
-            if (!result) {
+            if (result) {
                 const data = body;
                 if (data.email === result.email) {
                     await this.User.updateOne({ _id: params.id }, { $set: data });
@@ -73,11 +67,7 @@ class UserController {
                 res.status(404).json({ Message: 'User not found' }).end();
             }
         } catch (error) {
-            if (error.name === 'ValidationError') {
-                res.status(400).json({ Message: error.message }).end();
-            } else {
-                res.status(500).json({ Message: 'Server Error' }).end();
-            }
+            res.status(500).json({ Message: 'Server Error' }).end();
         }
     }
 }
