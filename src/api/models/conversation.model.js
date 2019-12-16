@@ -24,6 +24,7 @@ const validateMessage = (field) => {
 const conversation = new mongoose.Schema({
     users: { type: Array, validate: validateUser },
     messages: { type: Array, validate: validateMessage },
+    last_message: {},
 }, {
     timestamps: true,
 });
