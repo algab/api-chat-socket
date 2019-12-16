@@ -12,9 +12,18 @@ const validateUser = (field) => {
     return false;
 };
 
+const validateMessage = (field) => {
+    for (let i = 0; i < field.length; i += 1) {
+        if (typeof field[i] !== 'object') {
+            return false;
+        }
+    }
+    return true;
+};
+
 const conversation = new mongoose.Schema({
     users: { type: Array, validate: validateUser },
-    messages: [],
+    messages: { type: Array, validate: validateMessage },
 }, {
     timestamps: true,
 });
