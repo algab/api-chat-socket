@@ -19,6 +19,7 @@ app.use((req, res, next) => {
 });
 
 require('./api')(app);
+require('./socket')(socket);
 
 (async () => {
     try {
