@@ -6,7 +6,6 @@ class Conversation {
         this.save = this.save.bind(this);
         this.search = this.search.bind(this);
         this.user = this.user.bind(this);
-        this.message = this.message.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
     }
 
@@ -18,8 +17,8 @@ class Conversation {
             } else {
                 const data = body;
                 data.last_message = null;
-                await new this.Conversation(data).save();
-                res.status(201).json({ Message: 'Conversation save successful' }).end();
+                const result = await new this.Conversation(data).save();
+                res.status(201).json(result).end();
             }
         } catch (error) {
             res.status(500).json({ Message: 'Server Error' }).end();
@@ -35,36 +34,18 @@ class Conversation {
         }
     }
 
-    async user({ params }, res) {
+    async user({ params, query }, res) {
         try {
-            const data = await this.Conversation.aggregate([
-                { $match: { users: params.idUser } },
-                { $unwind: '$users' },
-                { $match: { users: { $ne: params.idUser } } },
-                { $project: { users: { $toObjectId: '$users' } } },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'users',
-                        foreignField: '_id',
-                        as: 'user',
-                    },
-                },
-                { $project: { user: 1 } },
-            ]);
-            res.status(200).json(data).end();
-        } catch (error) {
-            res.status(500).json({ Message: 'Server Error' }).end();
-        }
-    }
-
-    async message({ params, body }, res) {
-        try {
-            await this.Conversation.updateOne(
-                { _id: params.id },
-                { $push: { messages: body }, last_message: body },
-            );
-            res.status(200).json({ Message: 'Message added to conversation' }).end();
+            if (query.user) {
+                const data = await this.aggregate(
+                    params.idUser,
+                    [params.idUser, query.user],
+                );
+                res.status(200).json(data).end();
+            } else {
+                const data = await this.aggregate(params.idUser, [params.idUser]);
+                res.status(200).json(data).end();
+            }
         } catch (error) {
             res.status(500).json({ Message: 'Server Error' }).end();
         }
@@ -80,6 +61,26 @@ class Conversation {
         } catch (error) {
             res.status(500).json({ Message: 'Server Error' }).end();
         }
+    }
+
+    async aggregate(idUser, match) {
+        const data = await this.Conversation.aggregate([
+            { $match: { users: { $all: match } } },
+            { $sort: { updatedAt: -1 } },
+            { $unwind: '$users' },
+            { $match: { users: { $ne: idUser } } },
+            { $project: { users: { $toObjectId: '$users' }, last_message: 1 } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'users',
+                    foreignField: '_id',
+                    as: 'user',
+                },
+            },
+            { $project: { user: 1, last_message: 1 } },
+        ]);
+        return data;
     }
 }
 
